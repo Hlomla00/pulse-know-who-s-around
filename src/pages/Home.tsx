@@ -260,6 +260,51 @@ const Home = () => {
           </div>
         </div>
 
+        {/* Weather overlay */}
+        {weather && (() => {
+          const WeatherIcon = getWeatherIcon(weather.weatherCode);
+          return (
+            <motion.div
+              className="absolute top-14 left-4 z-[1000] cursor-pointer"
+              onClick={() => setWeatherExpanded(!weatherExpanded)}
+              layout
+            >
+              <motion.div
+                className="bg-card/90 backdrop-blur-md rounded-xl overflow-hidden"
+                layout
+              >
+                <div className="flex items-center gap-2 px-3 py-2">
+                  <WeatherIcon size={16} className="text-primary" />
+                  <span className="text-sm font-semibold text-foreground">{weather.temperature}°</span>
+                  <span className="text-xs text-muted-foreground">{getWeatherLabel(weather.weatherCode)}</span>
+                </div>
+
+                {weatherExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="px-3 pb-2 flex gap-3 border-t border-muted-foreground/10 pt-2"
+                  >
+                    <div className="flex items-center gap-1">
+                      <Wind size={12} className="text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">{weather.windSpeed} km/h</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Droplets size={12} className="text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">{weather.humidity}%</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Thermometer size={12} className="text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">Cape Town</span>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+
         {/* Real Map */}
         <div ref={mapContainerRef} className="flex-1 w-full" />
 
