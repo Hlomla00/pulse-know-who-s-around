@@ -81,6 +81,8 @@ const Home = () => {
   const [sheetOpen, setSheetOpen] = useState(true);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [locating, setLocating] = useState(false);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherExpanded, setWeatherExpanded] = useState(false);
   const navigate = useNavigate();
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
