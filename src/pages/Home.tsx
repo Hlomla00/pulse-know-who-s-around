@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronUp, ChevronDown, Navigation } from 'lucide-react';
+import { ChevronUp, ChevronDown, Navigation, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, CloudDrizzle, Wind, Droplets, Thermometer } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MobileLayout from '@/components/MobileLayout';
@@ -9,6 +9,39 @@ import BottomNav from '@/components/BottomNav';
 
 // CPUT Cape Town campus approximate coordinates
 const CPUT_CENTER: [number, number] = [-33.9285, 18.6390];
+
+interface WeatherData {
+  temperature: number;
+  windSpeed: number;
+  humidity: number;
+  weatherCode: number;
+}
+
+const getWeatherIcon = (code: number) => {
+  if (code === 0 || code === 1) return Sun;
+  if (code >= 2 && code <= 3) return Cloud;
+  if (code >= 45 && code <= 48) return Cloud;
+  if (code >= 51 && code <= 57) return CloudDrizzle;
+  if (code >= 61 && code <= 67) return CloudRain;
+  if (code >= 71 && code <= 77) return CloudSnow;
+  if (code >= 80 && code <= 82) return CloudRain;
+  if (code >= 95 && code <= 99) return CloudLightning;
+  return Cloud;
+};
+
+const getWeatherLabel = (code: number) => {
+  if (code === 0) return 'Clear';
+  if (code === 1) return 'Mostly Clear';
+  if (code === 2) return 'Partly Cloudy';
+  if (code === 3) return 'Overcast';
+  if (code >= 45 && code <= 48) return 'Foggy';
+  if (code >= 51 && code <= 57) return 'Drizzle';
+  if (code >= 61 && code <= 67) return 'Rain';
+  if (code >= 71 && code <= 77) return 'Snow';
+  if (code >= 80 && code <= 82) return 'Showers';
+  if (code >= 95 && code <= 99) return 'Thunderstorm';
+  return 'Unknown';
+};
 
 const friends = [
   { name: 'Lethabo M.', initials: 'LM', color: '#06C167', status: 'active', distance: '320m away', lat: -33.9275, lng: 18.6380 },
@@ -48,6 +81,8 @@ const Home = () => {
   const [sheetOpen, setSheetOpen] = useState(true);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [locating, setLocating] = useState(false);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherExpanded, setWeatherExpanded] = useState(false);
   const navigate = useNavigate();
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -118,7 +153,32 @@ const Home = () => {
     };
   }, []);
 
-  // Handle geolocation
+  // Fetch weather data from Open-Meteo (free, no API key)
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=-33.9285&longitude=18.639&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Africa/Johannesburg'
+        );
+        const data = await res.json();
+        if (data.current) {
+          setWeather({
+            temperature: Math.round(data.current.temperature_2m),
+            windSpeed: Math.round(data.current.wind_speed_10m),
+            humidity: data.current.relative_humidity_2m,
+            weatherCode: data.current.weather_code,
+          });
+        }
+      } catch (e) {
+        console.error('Weather fetch failed:', e);
+      }
+    };
+    fetchWeather();
+    const interval = setInterval(fetchWeather, 10 * 60 * 1000); // refresh every 10 min
+    return () => clearInterval(interval);
+  }, []);
+
+
   const locateUser = () => {
     if (!navigator.geolocation) return;
     setLocating(true);
@@ -199,6 +259,51 @@ const Home = () => {
             </button>
           </div>
         </div>
+
+        {/* Weather overlay */}
+        {weather && (() => {
+          const WeatherIcon = getWeatherIcon(weather.weatherCode);
+          return (
+            <motion.div
+              className="absolute top-14 left-4 z-[1000] cursor-pointer"
+              onClick={() => setWeatherExpanded(!weatherExpanded)}
+              layout
+            >
+              <motion.div
+                className="bg-card/90 backdrop-blur-md rounded-xl overflow-hidden"
+                layout
+              >
+                <div className="flex items-center gap-2 px-3 py-2">
+                  <WeatherIcon size={16} className="text-primary" />
+                  <span className="text-sm font-semibold text-foreground">{weather.temperature}°</span>
+                  <span className="text-xs text-muted-foreground">{getWeatherLabel(weather.weatherCode)}</span>
+                </div>
+
+                {weatherExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="px-3 pb-2 flex gap-3 border-t border-muted-foreground/10 pt-2"
+                  >
+                    <div className="flex items-center gap-1">
+                      <Wind size={12} className="text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">{weather.windSpeed} km/h</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Droplets size={12} className="text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">{weather.humidity}%</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Thermometer size={12} className="text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">Cape Town</span>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            </motion.div>
+          );
+        })()}
 
         {/* Real Map */}
         <div ref={mapContainerRef} className="flex-1 w-full" />
