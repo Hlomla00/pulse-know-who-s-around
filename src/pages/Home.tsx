@@ -153,7 +153,32 @@ const Home = () => {
     };
   }, []);
 
-  // Handle geolocation
+  // Fetch weather data from Open-Meteo (free, no API key)
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=-33.9285&longitude=18.639&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Africa/Johannesburg'
+        );
+        const data = await res.json();
+        if (data.current) {
+          setWeather({
+            temperature: Math.round(data.current.temperature_2m),
+            windSpeed: Math.round(data.current.wind_speed_10m),
+            humidity: data.current.relative_humidity_2m,
+            weatherCode: data.current.weather_code,
+          });
+        }
+      } catch (e) {
+        console.error('Weather fetch failed:', e);
+      }
+    };
+    fetchWeather();
+    const interval = setInterval(fetchWeather, 10 * 60 * 1000); // refresh every 10 min
+    return () => clearInterval(interval);
+  }, []);
+
+
   const locateUser = () => {
     if (!navigator.geolocation) return;
     setLocating(true);
