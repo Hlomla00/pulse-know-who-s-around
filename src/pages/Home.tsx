@@ -10,6 +10,39 @@ import BottomNav from '@/components/BottomNav';
 // CPUT Cape Town campus approximate coordinates
 const CPUT_CENTER: [number, number] = [-33.9285, 18.6390];
 
+interface WeatherData {
+  temperature: number;
+  windSpeed: number;
+  humidity: number;
+  weatherCode: number;
+}
+
+const getWeatherIcon = (code: number) => {
+  if (code === 0 || code === 1) return Sun;
+  if (code >= 2 && code <= 3) return Cloud;
+  if (code >= 45 && code <= 48) return Cloud;
+  if (code >= 51 && code <= 57) return CloudDrizzle;
+  if (code >= 61 && code <= 67) return CloudRain;
+  if (code >= 71 && code <= 77) return CloudSnow;
+  if (code >= 80 && code <= 82) return CloudRain;
+  if (code >= 95 && code <= 99) return CloudLightning;
+  return Cloud;
+};
+
+const getWeatherLabel = (code: number) => {
+  if (code === 0) return 'Clear';
+  if (code === 1) return 'Mostly Clear';
+  if (code === 2) return 'Partly Cloudy';
+  if (code === 3) return 'Overcast';
+  if (code >= 45 && code <= 48) return 'Foggy';
+  if (code >= 51 && code <= 57) return 'Drizzle';
+  if (code >= 61 && code <= 67) return 'Rain';
+  if (code >= 71 && code <= 77) return 'Snow';
+  if (code >= 80 && code <= 82) return 'Showers';
+  if (code >= 95 && code <= 99) return 'Thunderstorm';
+  return 'Unknown';
+};
+
 const friends = [
   { name: 'Lethabo M.', initials: 'LM', color: '#06C167', status: 'active', distance: '320m away', lat: -33.9275, lng: 18.6380 },
   { name: 'Zara K.', initials: 'ZK', color: '#F5A623', status: 'recent', distance: '1.2km away', lat: -33.9300, lng: 18.6410 },
