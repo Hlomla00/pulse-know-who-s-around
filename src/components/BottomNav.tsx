@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Map, Users, Activity, Radio, User } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext';
 
 const tabs = [
   { path: '/home', icon: Map, label: 'Map' },
@@ -12,9 +13,16 @@ const tabs = [
 const BottomNav = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { layoutMode } = useApp();
+
+  // mobile → always visible; desktop → always hidden; null → responsive
+  const visibilityClass =
+    layoutMode === 'mobile' ? 'flex' :
+    layoutMode === 'desktop' ? 'hidden' :
+    'md:hidden flex';
 
   return (
-    <div className="bg-background border-t border-border px-2 pb-6 pt-2">
+    <div className={`${visibilityClass} bg-background border-t border-border px-2 pb-6 pt-2 shrink-0`}>
       <div className="flex justify-around">
         {tabs.map(({ path, icon: Icon, label }) => {
           const active = pathname === path;

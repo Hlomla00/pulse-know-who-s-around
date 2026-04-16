@@ -2,14 +2,19 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import MobileLayout from '@/components/MobileLayout';
+import { useApp } from '@/contexts/AppContext';
 
 const SplashScreen = () => {
   const navigate = useNavigate();
+  const { layoutMode } = useApp();
 
   useEffect(() => {
-    const timer = setTimeout(() => navigate('/onboarding'), 2500);
+    const timer = setTimeout(
+      () => navigate(layoutMode ? '/onboarding' : '/choose-layout'),
+      2500
+    );
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, layoutMode]);
 
   return (
     <MobileLayout showStatusBar={false}>

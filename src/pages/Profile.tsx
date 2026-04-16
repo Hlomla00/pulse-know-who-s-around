@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Crown, LogOut, Lock } from 'lucide-react';
+import { ChevronRight, Crown, LogOut, Lock, Smartphone, Monitor } from 'lucide-react';
 import MobileLayout from '@/components/MobileLayout';
 import BottomNav from '@/components/BottomNav';
 import PremiumModal from '@/components/PremiumModal';
@@ -8,7 +8,7 @@ import { useApp } from '@/contexts/AppContext';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { isPremium, shareLocation, setShareLocation, shareStatus, setShareStatus, ghostMode, setGhostMode, hideLastSeen, setHideLastSeen, statusVisibility, setStatusVisibility } = useApp();
+  const { isPremium, shareLocation, setShareLocation, shareStatus, setShareStatus, ghostMode, setGhostMode, hideLastSeen, setHideLastSeen, statusVisibility, setStatusVisibility, layoutMode, setLayoutMode } = useApp();
   const [showPremium, setShowPremium] = useState(false);
 
   const Toggle = ({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled?: boolean }) => (
@@ -115,6 +115,32 @@ const Profile = () => {
             Start 7-Day Free Trial
           </button>
           <p className="text-[10px] text-muted-foreground text-center mt-2">R49/month after trial</p>
+        </div>
+
+        {/* Layout preference */}
+        <div className="bg-card rounded-lg p-4 mb-3">
+          <h3 className="text-sm font-bold text-foreground mb-3">Layout</h3>
+          <p className="text-xs text-muted-foreground mb-3">Choose how Pulse looks on your device.</p>
+          <div className="flex gap-2">
+            {(['mobile', 'desktop'] as const).map((mode) => {
+              const Icon = mode === 'mobile' ? Smartphone : Monitor;
+              const active = layoutMode === mode;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setLayoutMode(mode)}
+                  className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border tap-scale transition-all ${
+                    active
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-background text-muted-foreground hover:border-primary/40'
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span className="text-xs font-semibold capitalize">{mode}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Account */}
